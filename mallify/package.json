@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^13.5.0",
     "antd": "^5.22.1",
     "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
     "chart.js": "^4.4.6",
     "devextreme": "^24.1.7",
     "devextreme-react": "^24.1.7",
