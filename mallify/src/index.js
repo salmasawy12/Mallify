@@ -1,13 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import Homepage from './Pages/Homepage';
+import 'bootstrap/dist/css/bootstrap.min.css'; 
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // This imports both Bootstrap JS and Popper.js
+import Header from "../src/Const/Header"
+import Sidebar from './Const/Sidebar';
+import Footer from "../src/Const/Footer";
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+   
+    <Homepage />
+   {/* <Footer></Footer> */}
+   {/* <Header/> */}
+   {/* <Sidebar></Sidebar> */}
+   
+ 
   </React.StrictMode>
 );
 
