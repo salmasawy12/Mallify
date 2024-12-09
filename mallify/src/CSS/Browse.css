@@ -1,0 +1,26 @@
+.carousel-inner {
+    padding: 20px 0;
+  }
+  
+  .carousel-item {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Spacing between columns */
+  }
+  
+  .col-3 img {
+    height: 300px; /* Adjust the height */
+    object-fit: cover; /* Keeps the aspect ratio */
+  }
+  
+  h5 {
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  a.btn-link {
+    color: #000;
+    text-decoration: underline;
+    font-size: 14px;
+  }

@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import { Space } from "antd";
+import { spaceChildren } from "antd/es/button";
 import React from "react";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
@@ -7,7 +10,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         position: "absolute",
         top: 97, // Below the header
         right: 0,
-        height: "calc(100vh - 97px)", // Adjust height excluding header
+        height: "calc(100vh - 105px)", // Adjust height excluding header
         width: "300px",
         backgroundColor: "#131120",
         color: "#fff",
@@ -15,30 +18,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         display: "flex",
         flexDirection: "column",
         padding: "15px",
-        transform: isOpen ? "translateX(0)" : "translateX(120%)", // Move further out
-        transition: "transform 0.9s ease-in-out", // Longer duration for a slower slide
+        transform: isOpen ? "translateX(0)" : "translateX(100%)", // Slide in or out
+        transition: "transform 0.4s ease-in-out", // Smooth animation
       }}
     >
-      {/* Sidebar Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "20px",
-        }}
-      >
-        <span style={{ fontSize: "1.5rem" }}>Sidebar</span>
-        <i
-          className="bi bi-x"
-          style={{
-            fontSize: "30px",
-            color: "#fff",
-            cursor: "pointer",
-          }}
-          onClick={toggleSidebar} // Close sidebar
-        ></i>
-      </div>
-
       {/* Sidebar Links */}
       <ul
         style={{
@@ -53,12 +36,26 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             style={{
               textDecoration: "none",
               color: "#fff",
-              padding: "10px",
+              padding: "0px",
               borderRadius: "5px",
-              backgroundColor: "#495057",
             }}
           >
-            Home
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              Home{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-arrow-right"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"
+                />
+              </svg>
+            </div>
           </a>
         </li>
         <li style={{ marginBottom: "15px" }}>
@@ -67,11 +64,26 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             style={{
               textDecoration: "none",
               color: "#fff",
-              padding: "10px",
+              padding: "0px",
               borderRadius: "5px",
             }}
           >
-            Dashboard
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              Profile{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-arrow-right"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"
+                />
+              </svg>
+            </div>
           </a>
         </li>
         <li style={{ marginBottom: "15px" }}>
@@ -80,11 +92,88 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             style={{
               textDecoration: "none",
               color: "#fff",
-              padding: "10px",
+              padding: "0px",
               borderRadius: "5px",
             }}
           >
-            Orders
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              Settings{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-arrow-right"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"
+                />
+              </svg>
+            </div>
+          </a>
+        </li>
+        <li style={{ marginBottom: "15px" }}>
+          <a
+            href="#"
+            style={{
+              textDecoration: "none",
+              color: "#fff",
+              padding: "0px",
+              borderRadius: "5px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              Notifications{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-arrow-right"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"
+                />
+              </svg>
+            </div>
+          </a>
+        </li>
+        <li style={{ marginBottom: "15px" }}>
+          <a
+            href="#"
+            style={{
+              textDecoration: "none",
+              color: "#fff",
+              padding: "0px",
+              borderRadius: "5px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                height: "20px",
+              }}
+            >
+              Help/Support{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-arrow-right"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"
+                />
+              </svg>
+            </div>
           </a>
         </li>
       </ul>

@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import title from "../Images/Title.png";
 import bag from "../Images/Bag.png";
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import Sidebar from '../Const/Sidebar.js'
-import Homepage from '../Pages/Homepage.js'
-import Modal from '../Pages/Modal.js'
+import "bootstrap-icons/font/bootstrap-icons.css";
+import Sidebar from "../Const/Sidebar.js";
+import Homepage from "../Pages/Homepage.js";
+import Modal from "../Pages/Modal.js";
+import { Route, Router, useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const navigate = useNavigate();
   // State to control the sidebar visibility
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -37,7 +39,7 @@ const Header = () => {
               src={bag}
               alt="bag"
               style={{ height: "60px", width: "auto", color: "#2E2A50" }}
-              onClick={Homepage}
+              onClick={() => navigate("/")}
             />
             <img
               src={title}
@@ -88,12 +90,23 @@ const Header = () => {
           <div style={{ display: "flex", alignItems: "center" }}>
             <i
               className="bi bi-bag"
-              style={{ fontSize: "30px", marginTop: 0, color: "#2E2A50" }}
+              style={{
+                fontSize: "30px",
+                marginTop: 0,
+                color: "#2E2A50",
+                cursor: "pointer",
+              }}
+              onClick={() => navigate("/Beforecheckout")}
             ></i>
             <i
               className="bi bi-person"
-              style={{ fontSize: "35px", padding: "20px", color: "#2E2A50",cursor:"pointer" }}
-              onClick={toggleModal} 
+              style={{
+                fontSize: "35px",
+                padding: "20px",
+                color: "#2E2A50",
+                cursor: "pointer",
+              }}
+              onClick={toggleModal}
             ></i>
             {/* Icon to trigger the sidebar */}
             <i
@@ -104,10 +117,11 @@ const Header = () => {
           </div>
         </div>
       </nav>
-
       {/* Conditionally render the Sidebar component */}
-      {isSidebarOpen && <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-}        <Modal isModalOpen={isModalOpen} toggleModal={toggleModal} />
+      {isSidebarOpen && (
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      )}{" "}
+      <Modal isModalOpen={isModalOpen} toggleModal={toggleModal} />
     </div>
   );
 };

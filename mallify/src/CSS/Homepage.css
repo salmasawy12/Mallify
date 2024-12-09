@@ -4,3 +4,17 @@
   margin: 0 auto;  
 }
 
+.custom-underline {
+  border: none;
+  border-bottom: 1px solid #131120; /* Set the underline color and thickness */
+  outline: none; /* Remove outline when focused */
+  background-color: transparent; /* Remove background */
+  padding-left: 0;
+  padding-right: 0;
+  border-radius: 0;
+}
+
+.custom-underline:focus {
+  border-bottom: 1px solid #131120; /* Change underline color when focused */
+  box-shadow: none; /* Remove box-shadow */
+}
