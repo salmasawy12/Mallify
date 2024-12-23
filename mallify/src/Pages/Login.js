@@ -4,9 +4,59 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import Title from "../Images/Title.png";
 import bag from "../Images/Bag.png";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { getDocs, collection, query, where } from "firebase/firestore";
+import { auth } from "../Firebase/firebase";
+import { firestore } from "../Firebase/firebase";
 
 const Login = () => {
   const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSignIn, setIsSignIn] = useState(false); // Track login process
+  const [errorMessage, setErrorMessage] = useState(""); // Display error messages
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      setErrorMessage("Email and password are required.");
+      return;
+    }
+
+    try {
+      setIsSignIn(true);
+      setErrorMessage(""); // Clear previous errors
+
+      // Query Firestore for a user with the provided email
+      const usersRef = collection(firestore, "Users");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setErrorMessage("No account found with this email.");
+      } else {
+        // Assume only one document matches the email
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+
+        // Validate the password (use hashed comparison in production)
+        if (userData.password !== password) {
+          setErrorMessage("Incorrect password.");
+        } else {
+          // Successful login
+          navigate("/Browse");
+        }
+      }
+    } catch (error) {
+      console.error("Error during login: ", error);
+      setErrorMessage("Failed to log in. Please try again later.");
+    } finally {
+      setIsSignIn(false);
+    }
+  };
+
   return (
     <div>
       <nav className="navbar" style={{ backgroundColor: "#131120" }}>
@@ -71,7 +121,6 @@ const Login = () => {
                       style={{
                         color: "white",
                         fontWeight: "bolder",
-
                         margin: "0px",
                       }}
                     >
@@ -96,12 +145,27 @@ const Login = () => {
                   <form>
                     <div style={{ marginBottom: "10px" }}></div>
 
+                    {/* Error Message */}
+                    {errorMessage && (
+                      <div
+                        className="alert alert-danger"
+                        style={{
+                          color: "red",
+                          marginBottom: "15px",
+                          textAlign: "center",
+                        }}
+                      >
+                        {errorMessage}
+                      </div>
+                    )}
+
                     {/* Email */}
                     <div style={{ marginBottom: "15px" }}>
                       <input
                         type="email"
                         id="email"
                         placeholder="Email"
+                        onChange={(e) => setEmail(e.target.value)}
                         style={{
                           width: "100%",
                           padding: "10px",
@@ -122,6 +186,7 @@ const Login = () => {
                           type="password"
                           id="password"
                           placeholder="Password"
+                          onChange={(e) => setPassword(e.target.value)}
                           style={{
                             width: "100%",
                             padding: "10px",
@@ -148,7 +213,7 @@ const Login = () => {
                         cursor: "pointer",
                         fontWeight: "bold",
                       }}
-                      onClick={() => navigate("/Browse")}
+                      onClick={onSubmit}
                     >
                       Log in
                     </button>

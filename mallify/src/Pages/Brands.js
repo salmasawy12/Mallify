@@ -1,11 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Header from "../Const/Header";
 import { Link } from "react-router-dom";
 import Footer from "../Const/Footer";
+import { firestore } from "../Firebase/firebase";
+import { useCart } from "./CartContext";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+
+import { getApp } from "firebase/app"; // Ensure Firebase app is initialized
 
 const Brands = () => {
+  const { addToCart } = useCart();
+  const db = getFirestore(getApp());
   const [showSearch, setShowSearch] = useState(false);
 
   // State for search input
@@ -18,6 +31,47 @@ const Brands = () => {
   const filteredItems = items.filter((item) =>
     item.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Fetch products from Firestore
+
+  console.log("Firestore instance:", firestore);
+
+  const [products, setProducts] = useState([]);
+  const [brandName, setBrandName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [Category, setCategory] = useState("Sports");
+
+  // Fetch products by brand name
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const productsCollection = await getDocs(
+          query(collection(db, "Products"), where("Category", "==", Category))
+        );
+
+        if (productsCollection.empty) {
+          console.log(`No products found for brand: ${Category}`);
+        } else {
+          console.log("Fetched products:", productsCollection.docs);
+        }
+
+        const productsData = productsCollection.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        console.log("Mapped products data:", productsData);
+        setProducts(productsData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [Category]);
   return (
     <div>
       <Header></Header>
@@ -445,322 +499,69 @@ const Brands = () => {
           </div>
           <div className="col">
             <div className="row">
-              <div className="col" style={{ marginBottom: "10px" }}>
+              {loading ? (
+                <p>Loading products...</p> // Show loading message
+              ) : (
                 <div
-                  style={{
-                    width: "250px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => alert("Card clicked!")}
+                  className="product-list"
+                  style={{ display: "flex", flexWrap: "wrap" }}
                 >
-                  {/* Image Section */}
-                  <div style={{ position: "relative" }}>
-                    <img
-                      src="https://dw4gwhhv7uqc1.cloudfront.net/catalog%2FSeller_36472%2F66c3d83d9365a.jpg"
-                      alt="Product"
-                      style={{ width: "100%", display: "block" }}
-                    />
-                    {/* Sale Badge */}
+                  {products.map((product) => (
                     <div
+                      key={product.id}
+                      className="product-card"
                       style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                        backgroundColor: "red",
-                        color: "white",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        padding: "5px 10px",
-                        borderRadius: "4px",
+                        marginBottom: "10px",
+                        marginRight: "10px",
+                        flexBasis: "250px",
                       }}
                     >
-                      SALE
-                    </div>
-                    {/* Favorite Icon */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "8px",
-                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-heart"
-                        viewBox="0 0 16 16"
+                      <div
+                        style={{
+                          border: "1px solid #ddd",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                          cursor: "pointer",
+                        }}
                       >
-                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
-                      </svg>
+                        <img
+                          src={product.imageUrl || "/placeholder.png"}
+                          alt={product.productName}
+                          style={{ width: "100%", display: "block" }}
+                        />
+                        <div style={{ padding: "16px" }}>
+                          <h4 style={{ fontSize: "14px", color: "#666" }}>
+                            {product.brandName}
+                          </h4>
+                          <h3
+                            style={{
+                              fontSize: "18px",
+                              color: "#000",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {product.productName}
+                          </h3>
+                          <p style={{ color: "#333" }}>${product.Price}</p>
+                          <button
+                            className="btn btn-primary"
+                            onClick={() =>
+                              addToCart({
+                                ...product,
+                                price: product.Price,
+                                quantity: 1, // Default quantity is 1 when added to the cart
+                              })
+                            }
+                          >
+                            Add to Cart
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  {/* Text Section */}
-                  <div style={{ padding: "16px" }}>
-                    <h4
-                      style={{ fontSize: "14px", margin: "0", color: "#666" }}
-                    >
-                      REEBOK
-                    </h4>
-                    <h3
-                      style={{
-                        fontSize: "18px",
-                        margin: "10px 0 0 0",
-                        color: "#000",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Identity Big Logo Leggings
-                    </h3>
-                  </div>
+                  ))}
                 </div>
-              </div>
-              <div className="col" style={{ marginBottom: "10px" }}>
-                <div
-                  style={{
-                    width: "250px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => alert("Card clicked!")}
-                >
-                  {/* Image Section */}
-                  <div style={{ position: "relative" }}>
-                    <img
-                      src="https://dw4gwhhv7uqc1.cloudfront.net/catalog%2FSeller_36472%2F66c3d83d9365a.jpg"
-                      alt="Product"
-                      style={{ width: "100%", display: "block" }}
-                    />
-                    {/* Sale Badge */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                        backgroundColor: "red",
-                        color: "white",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      SALE
-                    </div>
-                    {/* Favorite Icon */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "8px",
-                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-heart"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
-                      </svg>
-                    </div>
-                  </div>
-                  {/* Text Section */}
-                  <div style={{ padding: "16px" }}>
-                    <h4
-                      style={{ fontSize: "14px", margin: "0", color: "#666" }}
-                    >
-                      REEBOK
-                    </h4>
-                    <h3
-                      style={{
-                        fontSize: "18px",
-                        margin: "10px 0 0 0",
-                        color: "#000",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Identity Big Logo Leggings
-                    </h3>
-                  </div>
-                </div>
-              </div>
-              <div className="col" style={{ marginBottom: "10px" }}>
-                <div
-                  style={{
-                    width: "250px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => alert("Card clicked!")}
-                >
-                  {/* Image Section */}
-                  <div style={{ position: "relative" }}>
-                    <img
-                      src="https://dw4gwhhv7uqc1.cloudfront.net/catalog%2FSeller_36472%2F66c3d83d9365a.jpg"
-                      alt="Product"
-                      style={{ width: "100%", display: "block" }}
-                    />
-                    {/* Sale Badge */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                        backgroundColor: "red",
-                        color: "white",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      SALE
-                    </div>
-                    {/* Favorite Icon */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "8px",
-                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-heart"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
-                      </svg>
-                    </div>
-                  </div>
-                  {/* Text Section */}
-                  <div style={{ padding: "16px" }}>
-                    <h4
-                      style={{ fontSize: "14px", margin: "0", color: "#666" }}
-                    >
-                      REEBOK
-                    </h4>
-                    <h3
-                      style={{
-                        fontSize: "18px",
-                        margin: "10px 0 0 0",
-                        color: "#000",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Identity Big Logo Leggings
-                    </h3>
-                  </div>
-                </div>
-              </div>
-              <div className="col" style={{ marginBottom: "10px" }}>
-                <div
-                  style={{
-                    width: "250px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => alert("Card clicked!")}
-                >
-                  {/* Image Section */}
-                  <div style={{ position: "relative" }}>
-                    <img
-                      src="https://dw4gwhhv7uqc1.cloudfront.net/catalog%2FSeller_36472%2F66c3d83d9365a.jpg"
-                      alt="Product"
-                      style={{ width: "100%", display: "block" }}
-                    />
-                    {/* Sale Badge */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                        backgroundColor: "red",
-                        color: "white",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      SALE
-                    </div>
-                    {/* Favorite Icon */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "8px",
-                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-heart"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
-                      </svg>
-                    </div>
-                  </div>
-                  {/* Text Section */}
-                  <div style={{ padding: "16px" }}>
-                    <h4
-                      style={{ fontSize: "14px", margin: "0", color: "#666" }}
-                    >
-                      REEBOK
-                    </h4>
-                    <h3
-                      style={{
-                        fontSize: "18px",
-                        margin: "10px 0 0 0",
-                        color: "#000",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Identity Big Logo Leggings
-                    </h3>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -17,30 +17,33 @@ import Womenshops from "./Pages/Womenshops";
 import Menshops from "./Pages/Menshops";
 import Cart from "./Pages/Cart";
 import Beforecheckout from "./Pages/Beforecheckout";
+import { CartProvider } from "./Pages/CartContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <Router>
-      {/* Render Header and Sidebar globally, so it appears on every page */}
+    <CartProvider>
+      <Router>
+        {/* Render Header and Sidebar globally, so it appears on every page */}
 
-      {/* Define the routes */}
-      <Routes>
-        {/* Define the route for Homepage */}
-        <Route path="/" element={<Homepage />} />
+        {/* Define the routes */}
+        <Routes>
+          {/* Define the route for Homepage */}
+          <Route path="/" element={<Homepage />} />
 
-        {/* Define the route for Browse page */}
-        <Route path="/Browse" element={<Browse />} />
-        <Route path="/Login" element={<Login />} />
+          {/* Define the route for Browse page */}
+          <Route path="/Browse" element={<Browse />} />
+          <Route path="/Login" element={<Login />} />
 
-        <Route path="/Signup" element={<Signup />} />
-        <Route path="/Brands" element={<Brands />} />
-        <Route path="/Womenshops" element={<Womenshops />} />
-        <Route path="/Menshops" element={<Menshops />} />
-        <Route path="/Cart" element={<Cart />} />
-        <Route path="/Beforecheckout" element={<Beforecheckout />} />
-      </Routes>
-    </Router>
+          <Route path="/Signup" element={<Signup />} />
+          <Route path="/Brands" element={<Brands />} />
+          <Route path="/Womenshops" element={<Womenshops />} />
+          <Route path="/Menshops" element={<Menshops />} />
+          <Route path="/Cart" element={<Cart />} />
+          <Route path="/Beforecheckout" element={<Beforecheckout />} />
+        </Routes>
+      </Router>
+    </CartProvider>
   </React.StrictMode>
 );
 

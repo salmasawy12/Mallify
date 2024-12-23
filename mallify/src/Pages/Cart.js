@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { useCart } from "./CartContext"; // Import useCart hook
 import Header from "../Const/Header";
 import Footer from "../Const/Footer";
 
 const Cart = () => {
+  const { cartItems, cartCount } = useCart(); // Get cart items and count from context
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -36,69 +39,54 @@ const Cart = () => {
 
   return (
     <div>
-      <Header></Header>
+      <Header />
       <div className="container" style={{ marginBottom: "20px" }}>
         <main>
           <div className="row g-5" style={{ marginTop: "10px" }}>
             <div className="col-md-5 col-lg-4 order-md-last">
               <h4 className="d-flex justify-content-between align-items-center mb-3">
                 <span className="text-primary">Your cart</span>
-                <span className="badge bg-primary rounded-pill">3</span>
+                {/* Dynamically update the cart count */}
+                <span className="badge bg-primary rounded-pill">
+                  {cartCount}
+                </span>
               </h4>
               <ul className="list-group mb-3">
-                <li className="list-group-item d-flex justify-content-between lh-sm">
-                  <div>
-                    <h6 className="my-0">Product name</h6>
-                    <small className="text-body-secondary">
-                      Brief description
-                    </small>
-                  </div>
-                  <span className="text-body-secondary">$12</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between lh-sm">
-                  <div>
-                    <h6 className="my-0">Second product</h6>
-                    <small className="text-body-secondary">
-                      Brief description
-                    </small>
-                  </div>
-                  <span className="text-body-secondary">$8</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between lh-sm">
-                  <div>
-                    <h6 className="my-0">Third item</h6>
-                    <small className="text-body-secondary">
-                      Brief description
-                    </small>
-                  </div>
-                  <span className="text-body-secondary">$5</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between bg-body-tertiary">
-                  <div className="text-success">
-                    <h6 className="my-0">Promo code</h6>
-                    <small>EXAMPLECODE</small>
-                  </div>
-                  <span className="text-success">−$5</span>
-                </li>
+                {/* Dynamically render cart items */}
+                {cartItems.length === 0 ? (
+                  <li className="list-group-item d-flex justify-content-between lh-sm">
+                    <span>Your cart is empty.</span>
+                  </li>
+                ) : (
+                  cartItems.map((item) => (
+                    <li
+                      key={item.id}
+                      className="list-group-item d-flex justify-content-between lh-sm"
+                    >
+                      <div>
+                        <h6 className="my-0">{item.name}</h6>
+                        <small className="text-body-secondary">
+                          Brief description
+                        </small>
+                      </div>
+                      <span className="text-body-secondary">${item.price}</span>
+                    </li>
+                  ))
+                )}
+
                 <li className="list-group-item d-flex justify-content-between">
                   <span>Total (USD)</span>
-                  <strong>$20</strong>
+                  <strong>
+                    $
+                    {cartItems
+                      .reduce(
+                        (total, item) => total + item.price * item.quantity,
+                        0
+                      )
+                      .toFixed(2)}
+                  </strong>
                 </li>
               </ul>
-              <form className="card p-2">
-                <div className="input-group">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Promo code"
-                    value={promoCode}
-                    onChange={handlePromoChange}
-                  />
-                  <button type="submit" className="btn btn-secondary">
-                    Redeem
-                  </button>
-                </div>
-              </form>
             </div>
             <div className="col-md-7 col-lg-8">
               <h4 className="mb-3">Billing address</h4>
@@ -207,7 +195,7 @@ const Cart = () => {
           </div>
         </main>
       </div>
-      <Footer></Footer>
+      <Footer />
     </div>
   );
 };

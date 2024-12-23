@@ -4,8 +4,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import Title from "../Images/Title.png";
 import bag from "../Images/Bag.png";
+import { doCreateUserWithEmailAndPassword } from "../Firebase/auth";
 import axios from "axios";
 import { Result } from "antd";
+import { firestore } from "../Firebase/firebase";
+import { collection, addDoc } from "firebase/firestore";
 const Signup = () => {
   const navigate = useNavigate();
   // State variables for form fields
@@ -17,12 +20,13 @@ const Signup = () => {
   const [dob, setDob] = useState("");
   const [nationality, setNationality] = useState("");
   const [password, setPassword] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
 
   // Error messages state
   const [errors, setErrors] = useState({});
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate form fields
@@ -39,10 +43,32 @@ const Signup = () => {
     if (!nationality) formErrors.nationality = "Nationality is required";
     if (!password) formErrors.password = "Password is required";
 
-    // If there are errors, set them and prevent submission
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
+    }
+
+    try {
+      setIsRegistering(true);
+
+      // Create a new user document
+      await addDoc(collection(firestore, "Users"), {
+        title,
+        firstName,
+        lastName,
+        email,
+        phone,
+        dob,
+        nationality,
+        password,
+      });
+
+      navigate("/Browse");
+    } catch (error) {
+      console.error("Error adding user: ", error);
+      setErrors({ firestore: "Failed to register user. Please try again." });
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -407,7 +433,7 @@ const Signup = () => {
                         borderRadius: "10px",
                         cursor: "pointer",
                       }}
-                      onClick={() => navigate("/Browse")}
+                      onClick={handleSubmit}
                     >
                       Create Account
                     </button>
