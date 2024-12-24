@@ -18,6 +18,7 @@ import Menshops from "./Pages/Menshops";
 import Cart from "./Pages/Cart";
 import Beforecheckout from "./Pages/Beforecheckout";
 import { CartProvider } from "./Pages/CartContext";
+import ProductPage from "./Pages/ProductPage";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -41,6 +42,7 @@ root.render(
           <Route path="/Menshops" element={<Menshops />} />
           <Route path="/Cart" element={<Cart />} />
           <Route path="/Beforecheckout" element={<Beforecheckout />} />
+          <Route path="/product/:productId" element={<ProductPage />} />
         </Routes>
       </Router>
     </CartProvider>
