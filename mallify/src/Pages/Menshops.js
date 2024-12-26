@@ -118,6 +118,31 @@ const Menshops = () => {
         : prevBrands.filter((brand) => brand !== name)
     );
   };
+  const [buttonLoading, setButtonLoading] = useState({}); // Track loading state for each product
+
+  const handleAddToCart = async (product) => {
+    setButtonLoading((prevState) => ({
+      ...prevState,
+      [product.id]: true, // Set loading for this specific product
+    }));
+
+    try {
+      const cartItem = {
+        ...product,
+        price: product.Sale ? product.DiscountedPrice : product.Price, // Use discounted price if on sale
+        quantity: 1, // Default quantity is 1 when added to the cart
+      };
+      await addToCart(cartItem);
+      alert("Item added to cart successfully!");
+    } catch (error) {
+      alert("Failed to add item to cart.");
+    } finally {
+      setButtonLoading((prevState) => ({
+        ...prevState,
+        [product.id]: false, // Reset loading state for this product
+      }));
+    }
+  };
 
   return (
     <div>
@@ -287,6 +312,7 @@ const Menshops = () => {
                                 style={{
                                   marginRight: "10px",
                                   transform: "scale(1.3)",
+                                  accentColor: "#131120",
                                 }}
                               />
                               {brand}
@@ -325,6 +351,7 @@ const Menshops = () => {
                           marginBottom: "10px",
                           marginRight: "10px",
                           flexBasis: "250px",
+                          position: "relative",
                         }}
                       >
                         <div
@@ -341,6 +368,23 @@ const Menshops = () => {
                             alt={product.productName}
                             style={{ width: "100%", display: "block" }}
                           />
+                          {product.Sale && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: "10px",
+                                left: "10px",
+                                backgroundColor: "red",
+                                color: "white",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                                padding: "5px 10px",
+                                borderRadius: "4px",
+                              }}
+                            >
+                              SALE
+                            </div>
+                          )}
                           <div style={{ padding: "16px" }}>
                             <h4 style={{ fontSize: "14px", color: "#666" }}>
                               {product.brandName}
@@ -354,18 +398,35 @@ const Menshops = () => {
                             >
                               {product.productName}
                             </h3>
-                            <p style={{ color: "#333" }}>${product.Price}</p>
+                            <p style={{ color: "#333" }}>
+                              {product.Sale ? (
+                                <>
+                                  <span
+                                    style={{ textDecoration: "line-through" }}
+                                  >
+                                    ${product.Price}
+                                  </span>
+                                  <br />
+                                  <span>${product.DiscountedPrice}</span>
+                                </>
+                              ) : (
+                                `$${product.Price}`
+                              )}
+                            </p>
                             <button
                               className="btn btn-primary"
-                              onClick={() =>
-                                addToCart({
-                                  ...product,
-                                  price: product.Price,
-                                  quantity: 1, // Default quantity is 1 when added to the cart
-                                })
-                              }
+                              style={{
+                                backgroundColor: "#131120",
+                                borderColor: "#131120",
+                              }}
+                              onClick={() => handleAddToCart(product)}
+                              disabled={buttonLoading[product.id]} // Disable button if loading
                             >
-                              Add to Cart
+                              {buttonLoading[product.id] ? (
+                                <span>Loading...</span>
+                              ) : (
+                                <span>Add to Cart</span>
+                              )}
                             </button>
                           </div>
                         </div>

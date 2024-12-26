@@ -171,7 +171,7 @@ const Browse = () => {
                   alt="Sale"
                 />
                 <h5>Sale</h5>
-                <a href="#" className="btn btn-link">
+                <a href="/Sale" className="btn btn-link">
                   Shop Now
                 </a>
               </div>

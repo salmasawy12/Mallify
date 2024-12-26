@@ -72,7 +72,10 @@ const ProductDetails = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <div className="container mt-5 flex-grow-1">
+      <div
+        className="container mt-5 flex-grow-1"
+        style={{ marginBottom: "40px" }}
+      >
         <div
           className="card shadow-lg"
           style={{ maxWidth: "800px", margin: "0 auto" }}

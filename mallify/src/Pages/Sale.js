@@ -72,6 +72,67 @@ const Brands = () => {
           queryConstraints.push(where("Type", "in", selectedTypes));
         }
 
+        // Fetch brands with applied filters
+        const productsCollection = await getDocs(
+          query(collection(db, "Brands"), ...queryConstraints)
+        );
+        const productsData = productsCollection.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Filter by search term and brand
+        const filteredBySearch = productsData.filter((product) =>
+          product.brandName?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        const filteredByBrand = filteredBySearch.filter(
+          (product) =>
+            selectedBrands.length === 0 ||
+            selectedBrands.includes(product.brandName)
+        );
+        setProducts(filteredByBrand);
+        // Extract unique brand names for the checkbox list
+        const uniqueBrands = [
+          ...new Set(productsData.map((product) => product.brandName)),
+        ];
+        setFilteredBrands(uniqueBrands);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, [filters, searchTerm, selectedBrands]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        let queryConstraints = [];
+
+        // Apply category filters (e.g., "Men", "Women")
+        const selectedCategories = Object.keys(filters).filter(
+          (key) =>
+            filters[key] &&
+            key !== "sports" &&
+            key !== "clothing" &&
+            key !== "accessories" &&
+            key !== "equipment" &&
+            key !== "jewllery & watches"
+        );
+        if (selectedCategories.length > 0) {
+          queryConstraints.push(where("Category", "in", selectedCategories));
+        }
+
+        // Apply type filters (e.g., "sports")
+        const selectedTypes = Object.keys(filters).filter(
+          (key) => filters[key] && key !== "Men" && key !== "Women" // Exclude category filters from type filter
+        );
+        if (selectedTypes.length > 0) {
+          queryConstraints.push(where("Type", "in", selectedTypes));
+        }
+
         const SaleProduct = Object.keys(filters).some((key) => key === "Sale");
 
         if (SaleProduct) {
@@ -151,7 +212,6 @@ const Brands = () => {
       }));
     }
   };
-
   return (
     <div>
       <Header></Header>
@@ -161,7 +221,7 @@ const Brands = () => {
             <Link to="/" style={{ color: "#131120", textDecoration: "none" }}>
               Home /
             </Link>{" "}
-            <span style={{ textDecoration: "underline" }}>Brands</span>
+            <span style={{ textDecoration: "underline" }}>Sale</span>
           </div>
         </div>
         <div
@@ -173,7 +233,7 @@ const Brands = () => {
             padding: "0px",
           }}
         >
-          Brands
+          Sale
         </div>
         <hr></hr>
         <div className="row">
@@ -351,32 +411,33 @@ const Brands = () => {
                   className="product-list"
                   style={{ display: "flex", flexWrap: "wrap" }}
                 >
-                  {products.map((product) => (
-                    <div
-                      key={product.id}
-                      className="product-card"
-                      style={{
-                        marginBottom: "10px",
-                        marginRight: "10px",
-                        flexBasis: "250px",
-                        position: "relative",
-                      }}
-                    >
+                  {products
+                    .filter((product) => product.Sale === true)
+                    .map((product) => (
                       <div
+                        key={product.id}
+                        className="product-card"
                         style={{
-                          border: "1px solid #ddd",
-                          borderRadius: "8px",
-                          overflow: "hidden",
-                          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                          cursor: "pointer",
+                          marginBottom: "10px",
+                          marginRight: "10px",
+                          flexBasis: "250px",
                         }}
                       >
-                        <img
-                          src={product.imageUrl || "/placeholder.png"}
-                          alt={product.productName}
-                          style={{ width: "100%", display: "block" }}
-                        />
-                        {product.Sale && (
+                        <div
+                          style={{
+                            border: "1px solid #ddd",
+                            borderRadius: "8px",
+                            overflow: "hidden",
+                            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                            cursor: "pointer",
+                            position: "relative",
+                          }}
+                        >
+                          <img
+                            src={product.imageUrl || "/placeholder.png"}
+                            alt={product.productName}
+                            style={{ width: "100%", display: "block" }}
+                          />
                           <div
                             style={{
                               position: "absolute",
@@ -392,54 +453,47 @@ const Brands = () => {
                           >
                             SALE
                           </div>
-                        )}
-                        <div style={{ padding: "16px" }}>
-                          <h4 style={{ fontSize: "14px", color: "#666" }}>
-                            {product.brandName}
-                          </h4>
-                          <h3
-                            style={{
-                              fontSize: "18px",
-                              color: "#000",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {product.productName}
-                          </h3>
-                          <p style={{ color: "#333" }}>
-                            {product.Sale ? (
-                              <>
-                                <span
-                                  style={{ textDecoration: "line-through" }}
-                                >
-                                  ${product.Price}
-                                </span>
-                                <br />
-                                <span>${product.DiscountedPrice}</span>
-                              </>
-                            ) : (
-                              `$${product.Price}`
-                            )}
-                          </p>
-                          <button
-                            className="btn btn-primary"
-                            style={{
-                              backgroundColor: "#131120",
-                              borderColor: "#131120",
-                            }}
-                            onClick={() => handleAddToCart(product)}
-                            disabled={buttonLoading[product.id]} // Disable button if loading
-                          >
-                            {buttonLoading[product.id] ? (
-                              <span>Loading...</span>
-                            ) : (
-                              <span>Add to Cart</span>
-                            )}
-                          </button>
+                          <div style={{ padding: "16px" }}>
+                            <h4 style={{ fontSize: "14px", color: "#666" }}>
+                              {product.brandName}
+                            </h4>
+                            <h3
+                              style={{
+                                fontSize: "18px",
+                                color: "#000",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {product.productName}
+                            </h3>
+                            <p style={{ color: "#333" }}>
+                              <span style={{ textDecoration: "line-through" }}>
+                                ${product.Price}
+                              </span>
+                              <br></br>
+                              {product.Sale && (
+                                <span> ${product.DiscountedPrice}</span>
+                              )}
+                            </p>
+                            <button
+                              className="btn btn-primary"
+                              style={{
+                                backgroundColor: "#131120",
+                                borderColor: "#131120",
+                              }}
+                              onClick={() => handleAddToCart(product)}
+                              disabled={buttonLoading[product.id]} // Disable button if loading
+                            >
+                              {buttonLoading[product.id] ? (
+                                <span>Loading...</span>
+                              ) : (
+                                <span>Add to Cart</span>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>

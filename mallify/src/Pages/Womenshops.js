@@ -1,24 +1,121 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Header from "../Const/Header";
 import { Link } from "react-router-dom";
 import Footer from "../Const/Footer";
+import { useCart } from "./CartContext";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+
+import { getApp } from "firebase/app";
 
 const Womenshops = () => {
+  const { addToCart } = useCart();
+  const db = getFirestore(getApp());
   const [showSearch, setShowSearch] = useState(false);
-
-  // State for search input
   const [searchTerm, setSearchTerm] = useState("");
+  const [products, setProducts] = useState([]);
+  const [filteredBrands, setFilteredBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Example list items
-  const items = ["BLSSD", "CLARINS", "Carter & White", "Clarks", "Damas"];
+  const [filters, setFilters] = useState({
+    men: false,
+    women: false,
+    bags: false,
+    accessories: false,
+    equipment: false,
+  });
 
-  // Filtered list based on the search term
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [selectedBrands, setSelectedBrands] = useState([]);
+
+  const [genderFilters, setGenderFilters] = useState({
+    women: false,
+    men: false,
+    unisex: false,
+  });
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+
+      try {
+        let queryConstraints = [where("Category", "==", "Women")];
+
+        // Apply type filters
+        const selectedTypes = Object.keys(filters).filter(
+          (key) => filters[key]
+        );
+        if (selectedTypes.length > 0) {
+          queryConstraints.push(where("Type", "in", selectedTypes));
+        }
+
+        const productsCollection = await getDocs(
+          query(collection(db, "Products"), ...queryConstraints)
+        );
+
+        const productsData = productsCollection.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        const selectedGenders = Object.keys(genderFilters).filter(
+          (key) => genderFilters[key]
+        );
+        if (selectedGenders.length > 0) {
+          queryConstraints.push(where("Gender", "in", selectedGenders));
+        }
+
+        // Filter by search term and brand
+        const filteredBySearch = productsData.filter((product) =>
+          product.brandName?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        const filteredByBrand = filteredBySearch.filter(
+          (product) =>
+            selectedBrands.length === 0 ||
+            selectedBrands.includes(product.brandName)
+        );
+
+        setProducts(filteredByBrand);
+
+        // Extract unique brand names for the checkbox list
+        const uniqueBrands = [
+          ...new Set(productsData.map((product) => product.brandName)),
+        ];
+        setFilteredBrands(uniqueBrands);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [filters, searchTerm, selectedBrands, genderFilters]);
+
+  const handleFilterChange = (event) => {
+    const { name, checked } = event.target;
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [name]: checked,
+    }));
+  };
+
+  const handleBrandChange = (event) => {
+    const { name, checked } = event.target;
+    setSelectedBrands((prevBrands) =>
+      checked
+        ? [...prevBrands, name]
+        : prevBrands.filter((brand) => brand !== name)
+    );
+  };
   return (
     <div>
       <Header></Header>
@@ -55,7 +152,7 @@ const Womenshops = () => {
                     data-bs-toggle="collapse"
                     data-bs-target="#home-collapse"
                     aria-expanded="false"
-                    style={{ fontSize: "25px" }}
+                    style={{ fontSize: "35px" }}
                   >
                     Categories
                     <svg
@@ -68,7 +165,7 @@ const Womenshops = () => {
                       style={{
                         marginLeft: "10px",
                         fontSize: "25px",
-                        marginTop: "10px",
+                        marginTop: "20px",
                       }}
                     >
                       <path
@@ -79,98 +176,38 @@ const Womenshops = () => {
                   </button>
                   <div className="collapse" id="home-collapse">
                     <ul className="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                      <li
-                        style={{
-                          fontSize: "20px",
-                          marginLeft: "25px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          id="clothing"
-                          name="clothing"
+                      {[
+                        "clothing",
+                        "footwear",
+                        "bags",
+                        "jewllery & watches",
+                        "accessories",
+                      ].map((filter) => (
+                        <li
+                          key={filter}
                           style={{
-                            marginRight: "10px",
-                            transform: "scale(1.3)",
+                            fontSize: "20px",
+                            marginLeft: "25px",
+                            marginBottom: "10px",
                           }}
-                        ></input>
-                        <label htmlFor="clothing">Clothing</label>
-                      </li>
-                      <li
-                        style={{
-                          fontSize: "20px",
-                          marginLeft: "25px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          id="footwear"
-                          name="footwear"
-                          style={{
-                            marginRight: "10px",
-                            transform: "scale(1.3)",
-                          }}
-                        ></input>
-                        <label htmlFor="footwear">Footwear</label>
-                      </li>
-                      <li
-                        style={{
-                          fontSize: "20px",
-                          marginLeft: "25px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          id="bags"
-                          name="bags"
-                          style={{
-                            marginRight: "10px",
-                            transform: "scale(1.3)",
-                          }}
-                        ></input>
-                        <label htmlFor="bags">Bags</label>
-                      </li>
-                      <li
-                        style={{
-                          fontSize: "20px",
-                          marginLeft: "25px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          id="jewellery&watches"
-                          name="jewellery&watches"
-                          style={{
-                            marginRight: "10px",
-                            transform: "scale(1.3)",
-                          }}
-                        ></input>
-                        <label htmlFor="jewellery&watches">
-                          Jewellery & Watches
-                        </label>
-                      </li>
-                      <li
-                        style={{
-                          fontSize: "20px",
-                          marginLeft: "25px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          id="accessories"
-                          name="accessories"
-                          style={{
-                            marginRight: "10px",
-                            transform: "scale(1.3)",
-                          }}
-                        ></input>
-                        <label htmlFor="accessories">Accessories</label>
-                      </li>
+                        >
+                          <input
+                            type="checkbox"
+                            id={filter}
+                            name={filter}
+                            checked={filters[filter]}
+                            onChange={handleFilterChange}
+                            style={{
+                              marginRight: "10px",
+                              transform: "scale(1.3)",
+                              accentColor: "#131120",
+                            }}
+                          />
+                          <label htmlFor={filter}>
+                            {filter.charAt(0) + filter.slice(1)}
+                          </label>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </li>
@@ -183,7 +220,7 @@ const Womenshops = () => {
                     data-bs-toggle="collapse"
                     data-bs-target="#dashboard-collapse"
                     aria-expanded="false"
-                    style={{ fontSize: "25px", whiteSpace: "nowrap" }}
+                    style={{ fontSize: "35px", whiteSpace: "nowrap" }}
                   >
                     Stores
                     <svg
@@ -196,7 +233,7 @@ const Womenshops = () => {
                       style={{
                         marginLeft: "10px",
                         fontSize: "25px",
-                        marginTop: "10px",
+                        marginTop: "15px",
                       }}
                     >
                       <path
@@ -230,8 +267,8 @@ const Womenshops = () => {
                           padding: 0,
                         }}
                       >
-                        {filteredItems.length > 0 ? (
-                          filteredItems.map((item, index) => (
+                        {filteredBrands.length > 0 ? (
+                          filteredBrands.map((brand, index) => (
                             <li
                               key={index}
                               style={{
@@ -242,14 +279,15 @@ const Womenshops = () => {
                             >
                               <input
                                 type="checkbox"
-                                id={item}
-                                name={item}
+                                id={brand}
+                                name={brand}
+                                onChange={handleBrandChange}
                                 style={{
                                   marginRight: "10px",
                                   transform: "scale(1.3)",
                                 }}
                               />
-                              {item}
+                              {brand}
                             </li>
                           ))
                         ) : (
@@ -263,417 +301,80 @@ const Womenshops = () => {
                 </li>
 
                 <li className="border-top my-3"></li>
-
-                {/* Account Section */}
-                <li className="mb-1">
-                  <button
-                    className="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#account-collapse"
-                    aria-expanded="false"
-                    style={{ fontSize: "25px" }}
-                  >
-                    Account
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="25"
-                      height="25"
-                      fill="currentColor"
-                      class="bi bi-chevron-compact-down"
-                      viewBox="0 0 16 16"
-                      style={{
-                        marginLeft: "10px",
-                        fontSize: "25px",
-                        marginTop: "10px",
-                      }}
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67"
-                      />
-                    </svg>
-                  </button>
-                  <div className="collapse" id="account-collapse">
-                    <ul className="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                      <li
-                        style={{
-                          fontSize: "20px",
-                          marginLeft: "25px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <a
-                          href="#"
-                          className="link-body-emphasis d-inline-flex text-decoration-none rounded"
-                        >
-                          New...
-                        </a>
-                      </li>
-                      <li
-                        style={{
-                          fontSize: "20px",
-                          marginLeft: "25px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <a
-                          href="#"
-                          className="link-body-emphasis d-inline-flex text-decoration-none rounded"
-                        >
-                          Profile
-                        </a>
-                      </li>
-                      <li
-                        style={{
-                          fontSize: "20px",
-                          marginLeft: "25px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <a
-                          href="#"
-                          className="link-body-emphasis d-inline-flex text-decoration-none rounded"
-                        >
-                          Settings
-                        </a>
-                      </li>
-                      <li
-                        style={{
-                          fontSize: "20px",
-                          marginLeft: "25px",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        <a
-                          href="#"
-                          className="link-body-emphasis d-inline-flex text-decoration-none rounded"
-                        >
-                          Sign out
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </li>
               </ul>
             </div>
           </div>
           <div className="col">
-            <div className="row">
-              <div className="col" style={{ marginBottom: "10px" }}>
-                <div
-                  style={{
-                    width: "250px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => alert("Card clicked!")}
-                >
-                  {/* Image Section */}
-                  <div style={{ position: "relative" }}>
-                    <img
-                      src="https://dw4gwhhv7uqc1.cloudfront.net/catalog%2FSeller_36472%2F66ed427dcf2b1.jpg"
-                      alt="Product"
-                      style={{ width: "100%", display: "block" }}
-                    />
-                    {/* Sale Badge */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                        backgroundColor: "red",
-                        color: "white",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      SALE
-                    </div>
-                    {/* Favorite Icon */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "8px",
-                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-heart"
-                        viewBox="0 0 16 16"
+            {" "}
+            <div className="col">
+              <div className="row">
+                {loading ? (
+                  <p>Loading products...</p> // Show loading message
+                ) : (
+                  <div
+                    className="product-list"
+                    style={{ display: "flex", flexWrap: "wrap" }}
+                  >
+                    {products.map((product) => (
+                      <div
+                        key={product.id}
+                        className="product-card"
+                        style={{
+                          marginBottom: "10px",
+                          marginRight: "10px",
+                          flexBasis: "250px",
+                        }}
                       >
-                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
-                      </svg>
-                    </div>
+                        <div
+                          style={{
+                            border: "1px solid #ddd",
+                            borderRadius: "8px",
+                            overflow: "hidden",
+                            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <img
+                            src={product.imageUrl || "/placeholder.png"}
+                            alt={product.productName}
+                            style={{ width: "100%", display: "block" }}
+                          />
+                          <div style={{ padding: "16px" }}>
+                            <h4 style={{ fontSize: "14px", color: "#666" }}>
+                              {product.brandName}
+                            </h4>
+                            <h3
+                              style={{
+                                fontSize: "18px",
+                                color: "#000",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {product.productName}
+                            </h3>
+                            <p style={{ color: "#333" }}>${product.Price}</p>
+                            <button
+                              className="btn"
+                              style={{
+                                backgroundColor: "#131120",
+                                color: "white",
+                              }}
+                              onClick={() =>
+                                addToCart({
+                                  ...product,
+                                  price: product.Price,
+                                  quantity: 1, // Default quantity is 1 when added to the cart
+                                })
+                              }
+                            >
+                              Add to Cart
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  {/* Text Section */}
-                  <div style={{ padding: "16px" }}>
-                    <h4
-                      style={{ fontSize: "14px", margin: "0", color: "#666" }}
-                    >
-                      Tommy Bahama
-                    </h4>
-                    <h3
-                      style={{
-                        fontSize: "18px",
-                        margin: "10px 0 0 0",
-                        color: "#000",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Two Palms Raw Edge Jacket
-                    </h3>
-                  </div>
-                </div>
-              </div>
-              <div className="col" style={{ marginBottom: "10px" }}>
-                <div
-                  style={{
-                    width: "250px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => alert("Card clicked!")}
-                >
-                  {/* Image Section */}
-                  <div style={{ position: "relative" }}>
-                    <img
-                      src="https://dw4gwhhv7uqc1.cloudfront.net/catalog%2FSeller_36472%2F66c3d83d9365a.jpg"
-                      alt="Product"
-                      style={{ width: "100%", display: "block" }}
-                    />
-                    {/* Sale Badge */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                        backgroundColor: "red",
-                        color: "white",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      SALE
-                    </div>
-                    {/* Favorite Icon */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "8px",
-                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-heart"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
-                      </svg>
-                    </div>
-                  </div>
-                  {/* Text Section */}
-                  <div style={{ padding: "16px" }}>
-                    <h4
-                      style={{ fontSize: "14px", margin: "0", color: "#666" }}
-                    >
-                      REEBOK
-                    </h4>
-                    <h3
-                      style={{
-                        fontSize: "18px",
-                        margin: "10px 0 0 0",
-                        color: "#000",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Identity Big Logo Leggings
-                    </h3>
-                  </div>
-                </div>
-              </div>
-              <div className="col" style={{ marginBottom: "10px" }}>
-                <div
-                  style={{
-                    width: "250px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => alert("Card clicked!")}
-                >
-                  {/* Image Section */}
-                  <div style={{ position: "relative" }}>
-                    <img
-                      src="https://dw4gwhhv7uqc1.cloudfront.net/catalog%2FSeller_39401%2F66e7ddee544cb.jpg"
-                      alt="Product"
-                      style={{ width: "100%", display: "block" }}
-                    />
-                    {/* Sale Badge */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                        backgroundColor: "red",
-                        color: "white",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      SALE
-                    </div>
-                    {/* Favorite Icon */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "8px",
-                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-heart"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
-                      </svg>
-                    </div>
-                  </div>
-                  {/* Text Section */}
-                  <div style={{ padding: "16px" }}>
-                    <h4
-                      style={{ fontSize: "14px", margin: "0", color: "#666" }}
-                    >
-                      BLSSD
-                    </h4>
-                    <h3
-                      style={{
-                        fontSize: "18px",
-                        margin: "10px 0 0 0",
-                        color: "#000",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      High Neck Dress With Round Cord
-                    </h3>
-                  </div>
-                </div>
-              </div>
-              <div className="col" style={{ marginBottom: "10px" }}>
-                <div
-                  style={{
-                    width: "250px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => alert("Card clicked!")}
-                >
-                  {/* Image Section */}
-                  <div style={{ position: "relative" }}>
-                    <img
-                      src="https://dw4gwhhv7uqc1.cloudfront.net/catalog%2FSeller_36472%2F66b96553435c5.jpg"
-                      alt="Product"
-                      style={{ width: "100%", display: "block" }}
-                    />
-                    {/* Sale Badge */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        left: "10px",
-                        backgroundColor: "red",
-                        color: "white",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      SALE
-                    </div>
-                    {/* Favorite Icon */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        backgroundColor: "white",
-                        borderRadius: "50%",
-                        padding: "8px",
-                        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        class="bi bi-heart"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15" />
-                      </svg>
-                    </div>
-                  </div>
-                  {/* Text Section */}
-                  <div style={{ padding: "16px" }}>
-                    <h4
-                      style={{ fontSize: "14px", margin: "0", color: "#666" }}
-                    >
-                      Carter & White
-                    </h4>
-                    <h3
-                      style={{
-                        fontSize: "18px",
-                        margin: "10px 0 0 0",
-                        color: "#000",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Waisted Belt Shirt Dress
-                    </h3>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

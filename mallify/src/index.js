@@ -18,10 +18,10 @@ import Menshops from "./Pages/Menshops";
 import Cart from "./Pages/Cart";
 import Beforecheckout from "./Pages/Beforecheckout";
 import { CartProvider } from "./Pages/CartContext";
-import ProductPage from "./Pages/ProductPage";
 import Sports from "./Pages/Sports";
 import ProductDetails from "./Pages/ProductDetails";
 import StoreDetails from "./Pages/StoreDetails";
+import Sale from "./Pages/Sale";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 <link
@@ -49,12 +49,11 @@ root.render(
           <Route path="/Menshops" element={<Menshops />} />
           <Route path="/Cart" element={<Cart />} />
           <Route path="/Beforecheckout" element={<Beforecheckout />} />
-          {/* <Route path="/product/:productId" element={<ProductPage />} /> */}
-          {/* <Route path="/product/:productId" element={<ProductPage />} /> */}
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/store/:brandName" element={<StoreDetails />} />
 
           <Route path="/Sports" element={<Sports />} />
+          <Route path="/Sale" element={<Sale />} />
         </Routes>
       </Router>
     </CartProvider>
