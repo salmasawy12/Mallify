@@ -19,8 +19,15 @@ import Cart from "./Pages/Cart";
 import Beforecheckout from "./Pages/Beforecheckout";
 import { CartProvider } from "./Pages/CartContext";
 import ProductPage from "./Pages/ProductPage";
+import Sports from "./Pages/Sports";
+import ProductDetails from "./Pages/ProductDetails";
+import StoreDetails from "./Pages/StoreDetails";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>;
 root.render(
   <React.StrictMode>
     <CartProvider>
@@ -42,7 +49,12 @@ root.render(
           <Route path="/Menshops" element={<Menshops />} />
           <Route path="/Cart" element={<Cart />} />
           <Route path="/Beforecheckout" element={<Beforecheckout />} />
-          <Route path="/product/:productId" element={<ProductPage />} />
+          {/* <Route path="/product/:productId" element={<ProductPage />} /> */}
+          {/* <Route path="/product/:productId" element={<ProductPage />} /> */}
+          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/store/:brandName" element={<StoreDetails />} />
+
+          <Route path="/Sports" element={<Sports />} />
         </Routes>
       </Router>
     </CartProvider>

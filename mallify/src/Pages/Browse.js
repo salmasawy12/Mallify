@@ -159,7 +159,7 @@ const Browse = () => {
                   alt="Sports"
                 />
                 <h5>Sports</h5>
-                <a href="/Brands" className="btn btn-link">
+                <a href="/Sports" className="btn btn-link">
                   Shop Now
                 </a>
               </div>

@@ -32,7 +32,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       >
         <li style={{ marginBottom: "15px" }}>
           <a
-            href="#"
+            href="/"
             style={{
               textDecoration: "none",
               color: "#fff",

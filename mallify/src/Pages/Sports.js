@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Header from "../Const/Header";
@@ -13,9 +13,10 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import { getApp } from "firebase/app"; // Ensure Firebase app is initialized
 
-const Brands = () => {
+import { getApp } from "firebase/app";
+
+const Sports = () => {
   const { addToCart } = useCart();
   const db = getFirestore(getApp());
   const [showSearch, setShowSearch] = useState(false);
@@ -25,41 +26,22 @@ const Brands = () => {
   const [loading, setLoading] = useState(true);
 
   const [filters, setFilters] = useState({
-    men: false,
-    women: false,
-    bags: false,
-    accessories: false,
-    equipment: false,
     clothing: false,
-    sports: false, // Added for Sports filter
+    footwear: false,
+    equipment: false,
+    accessories: false,
   });
 
   const [selectedBrands, setSelectedBrands] = useState([]);
-
-  const [genderFilters, setGenderFilters] = useState({
-    women: false,
-    men: false,
-    unisex: false,
-  });
-
-  const [buttonLoading, setButtonLoading] = useState({}); // Track loading state for each product
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
 
       try {
-        let queryConstraints = [];
+        let queryConstraints = [where("Category", "==", "Sports")]; // Filter by "Sports"
 
-        // Apply category filters (e.g., "Men", "Women")
-        const selectedCategories = Object.keys(genderFilters).filter(
-          (key) => genderFilters[key]
-        );
-        if (selectedCategories.length > 0) {
-          queryConstraints.push(where("Category", "in", selectedCategories));
-        }
-
-        // Apply type filters (e.g., "Sports", "Clothing")
+        // Apply type filters
         const selectedTypes = Object.keys(filters).filter(
           (key) => filters[key]
         );
@@ -67,9 +49,8 @@ const Brands = () => {
           queryConstraints.push(where("Type", "in", selectedTypes));
         }
 
-        // Fetch brands with applied filters
         const productsCollection = await getDocs(
-          query(collection(db, "Brands"), ...queryConstraints)
+          query(collection(db, "Products"), ...queryConstraints)
         );
 
         const productsData = productsCollection.docs.map((doc) => ({
@@ -103,7 +84,7 @@ const Brands = () => {
     };
 
     fetchProducts();
-  }, [filters, searchTerm, selectedBrands, genderFilters]);
+  }, [filters, searchTerm, selectedBrands]);
 
   const handleFilterChange = (event) => {
     const { name, checked } = event.target;
@@ -122,29 +103,6 @@ const Brands = () => {
     );
   };
 
-  const handleAddToCart = async (product) => {
-    setButtonLoading((prevState) => ({
-      ...prevState,
-      [product.id]: true, // Set loading for this specific product
-    }));
-
-    try {
-      await addToCart({
-        ...product,
-        price: product.Price,
-        quantity: 1, // Default quantity is 1 when added to the cart
-      });
-      alert("Item added to cart successfully!");
-    } catch (error) {
-      alert("Failed to add item to cart.");
-    } finally {
-      setButtonLoading((prevState) => ({
-        ...prevState,
-        [product.id]: false, // Reset loading state for this product
-      }));
-    }
-  };
-
   return (
     <div>
       <Header></Header>
@@ -154,7 +112,7 @@ const Brands = () => {
             <Link to="/" style={{ color: "#131120", textDecoration: "none" }}>
               Home /
             </Link>{" "}
-            <span style={{ textDecoration: "underline" }}>Brands</span>
+            <span style={{ textDecoration: "underline" }}>Sports</span>
           </div>
         </div>
         <div
@@ -166,7 +124,7 @@ const Brands = () => {
             padding: "0px",
           }}
         >
-          Brands
+          Sports
         </div>
         <hr></hr>
         <div className="row">
@@ -178,7 +136,7 @@ const Brands = () => {
                   <button
                     className="btn btn-toggle d-inline-flex align-items-left rounded border-0 collapsed"
                     data-bs-toggle="collapse"
-                    data-bs-target="#home-collapse"
+                    data-bs-target="#categories-collapse"
                     aria-expanded="false"
                     style={{ fontSize: "35px" }}
                   >
@@ -202,16 +160,15 @@ const Brands = () => {
                       />
                     </svg>
                   </button>
-                  <div className="collapse" id="home-collapse">
+                  <div className="collapse" id="categories-collapse">
                     <ul className="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                       {[
-                        "Men",
-                        "Women",
+                        "men",
+                        "women",
                         "bags",
                         "accessories",
                         "equipment",
                         "clothing",
-                        "sports", // Added Sports filter
                       ].map((filter) => (
                         <li
                           key={filter}
@@ -247,9 +204,9 @@ const Brands = () => {
                     onClick={() => setShowSearch(!showSearch)}
                     className="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed"
                     data-bs-toggle="collapse"
-                    data-bs-target="#dashboard-collapse"
+                    data-bs-target="#stores-collapse"
                     aria-expanded="false"
-                    style={{ fontSize: "35px", whiteSpace: "nowrap" }}
+                    style={{ fontSize: "35px" }}
                   >
                     Stores
                     <svg
@@ -273,7 +230,6 @@ const Brands = () => {
                   </button>
                   {showSearch && (
                     <div style={{ marginTop: "20px" }}>
-                      {/* Search Bar */}
                       <input
                         type="text"
                         placeholder="Search stores..."
@@ -287,8 +243,6 @@ const Brands = () => {
                           borderRadius: "4px",
                         }}
                       />
-
-                      {/* Unordered List */}
                       <ul
                         style={{
                           marginTop: "20px",
@@ -336,7 +290,7 @@ const Brands = () => {
           <div className="col">
             <div className="row">
               {loading ? (
-                <p>Loading products...</p> // Show loading message
+                <p>Loading products...</p>
               ) : (
                 <div
                   className="product-list"
@@ -367,33 +321,23 @@ const Brands = () => {
                           style={{ width: "100%", display: "block" }}
                         />
                         <div style={{ padding: "16px" }}>
-                          <h4 style={{ fontSize: "14px", color: "#666" }}>
-                            {product.brandName}
-                          </h4>
-                          <h3
-                            style={{
-                              fontSize: "18px",
-                              color: "#000",
-                              fontWeight: "bold",
-                            }}
+                          <h4
+                            style={{ fontSize: "18px", marginBottom: "10px" }}
                           >
                             {product.productName}
-                          </h3>
-                          <p style={{ color: "#333" }}>${product.Price}</p>
+                          </h4>
+                          <p style={{ fontSize: "16px", marginBottom: "10px" }}>
+                            ${product.Price}
+                          </p>
                           <button
                             className="btn btn-primary"
+                            onClick={() => addToCart(product)}
                             style={{
                               backgroundColor: "#131120",
                               borderColor: "#131120",
                             }}
-                            onClick={() => handleAddToCart(product)}
-                            disabled={buttonLoading[product.id]} // Disable button if loading
                           >
-                            {buttonLoading[product.id] ? (
-                              <span>Loading...</span>
-                            ) : (
-                              <span>Add to Cart</span>
-                            )}
+                            Add to Cart
                           </button>
                         </div>
                       </div>
@@ -410,4 +354,4 @@ const Brands = () => {
   );
 };
 
-export default Brands;
+export default Sports;

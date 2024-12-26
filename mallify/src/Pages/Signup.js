@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import Title from "../Images/Title.png";
 import bag from "../Images/Bag.png";
 import { doCreateUserWithEmailAndPassword } from "../Firebase/auth";
-import axios from "axios";
 import { Result } from "antd";
 import { firestore } from "../Firebase/firebase";
 import { collection, addDoc } from "firebase/firestore";

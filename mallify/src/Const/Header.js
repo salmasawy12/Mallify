@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { firestore } from "../Firebase/firebase.js";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, getDocs } from "firebase/firestore";
 import title from "../Images/Title.png";
 import bag from "../Images/Bag.png";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -11,7 +11,10 @@ import { useCart } from "../Pages/CartContext";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState(""); // For the search input
-  const [searchResults, setSearchResults] = useState([]); // For storing search results
+  const [searchResults, setSearchResults] = useState({
+    products: [],
+    brands: [],
+  }); // Initialize search results as empty arrays
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { cartCount } = useCart(); // Access cart count from context
@@ -30,22 +33,22 @@ const Header = () => {
   // Fetch and filter products based on search term
   const handleSearch = async () => {
     if (!debouncedTerm.trim()) {
-      setSearchResults([]); // Clear results if search term is empty
+      setSearchResults({ products: [], brands: [] }); // Clear results if search term is empty
       return;
     }
 
     try {
-      // Fetch all products first (you can optimize this by limiting the number of results)
+      // Fetch all products
       const q = query(collection(firestore, "Products"));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        setSearchResults([]);
+        setSearchResults({ products: [], brands: [] });
         return;
       }
 
-      // Filter products by checking if the product name includes the search term
-      const filteredResults = querySnapshot.docs
+      // Filter products by checking if the product name or brand name includes the search term
+      const filteredProducts = querySnapshot.docs
         .map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -54,10 +57,25 @@ const Header = () => {
           (product) =>
             product.productName
               .toLowerCase()
-              .includes(debouncedTerm.toLowerCase()) // Substring match (case-insensitive)
+              .includes(debouncedTerm.toLowerCase()) // Check product name
         );
 
-      setSearchResults(filteredResults);
+      // Filter brands by checking if the brand name includes the search term
+      const filteredBrands = [
+        ...new Set(
+          querySnapshot.docs
+            .map((doc) => doc.data().brandName)
+            .filter((brand) =>
+              brand.toLowerCase().includes(debouncedTerm.toLowerCase())
+            )
+        ),
+      ];
+
+      // Combine both product and brand results
+      setSearchResults({
+        products: filteredProducts,
+        brands: filteredBrands,
+      });
     } catch (error) {
       console.error("Error fetching products: ", error);
     }
@@ -71,6 +89,10 @@ const Header = () => {
   // Function to handle item click (redirect to product page)
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`); // Redirect to the product page (you should set up a route for this)
+  };
+  const handleBrandClick = (brandName) => {
+    // Redirect to the brand's product page with the correct route
+    navigate(`/store/${brandName}`); // Navigate to the 'store' route, not 'brand'
   };
 
   const toggleSidebar = () => {
@@ -149,34 +171,61 @@ const Header = () => {
                 </span>
               </div>
               {/* Display search results */}
-              {searchTerm && searchResults.length > 0 && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "60px",
-                    left: "15px",
-                    width: "470px",
-                    backgroundColor: "#fff",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    zIndex: "1000",
-                  }}
-                >
-                  {searchResults.map((product) => (
-                    <div
-                      key={product.id}
-                      onClick={() => handleProductClick(product.id)}
-                      style={{
-                        padding: "10px",
-                        cursor: "pointer",
-                        borderBottom: "1px solid #eee",
-                      }}
-                    >
-                      <strong>{product.productName}</strong>{" "}
-                      {/* Display product name */}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {searchTerm &&
+                (searchResults.products.length > 0 ||
+                  searchResults.brands.length > 0) && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "60px",
+                      left: "15px",
+                      width: "470px",
+                      backgroundColor: "#fff",
+                      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                      zIndex: "1000",
+                    }}
+                  >
+                    {/* Display Products */}
+                    {searchResults.products.length > 0 && (
+                      <div>
+                        <h6>Products</h6>
+                        {searchResults.products.map((product) => (
+                          <div
+                            key={product.id}
+                            onClick={() => handleProductClick(product.id)}
+                            style={{
+                              padding: "10px",
+                              cursor: "pointer",
+                              borderBottom: "1px solid #eee",
+                            }}
+                          >
+                            <strong>{product.productName}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Display Brands */}
+                    {searchResults.brands.length > 0 && (
+                      <div>
+                        <h6>Brands</h6>
+                        {searchResults.brands.map((brand, index) => (
+                          <div
+                            key={index}
+                            onClick={() => handleBrandClick(brand)}
+                            style={{
+                              padding: "10px",
+                              cursor: "pointer",
+                              borderBottom: "1px solid #eee",
+                            }}
+                          >
+                            <strong>{brand}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
             </form>
 
             <div style={{ display: "flex", alignItems: "center" }}>
@@ -236,10 +285,8 @@ const Header = () => {
         </div>
       </nav>
 
-      {isSidebarOpen && (
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-      )}
-      <Modal isModalOpen={isModalOpen} toggleModal={toggleModal} />
+      {isSidebarOpen && <Sidebar closeSidebar={toggleSidebar} />}
+      {isModalOpen && <Modal closeModal={toggleModal} />}
     </div>
   );
 };
