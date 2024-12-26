@@ -47,21 +47,26 @@ const Brands = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
-
       try {
         let queryConstraints = [];
 
         // Apply category filters (e.g., "Men", "Women")
-        const selectedCategories = Object.keys(genderFilters).filter(
-          (key) => genderFilters[key]
+        const selectedCategories = Object.keys(filters).filter(
+          (key) =>
+            filters[key] &&
+            key !== "sports" &&
+            key !== "clothing" &&
+            key !== "accessories" &&
+            key !== "equipment" &&
+            key !== "jewllery & watches"
         );
         if (selectedCategories.length > 0) {
           queryConstraints.push(where("Category", "in", selectedCategories));
         }
 
-        // Apply type filters (e.g., "Sports", "Clothing")
+        // Apply type filters (e.g., "sports")
         const selectedTypes = Object.keys(filters).filter(
-          (key) => filters[key]
+          (key) => filters[key] && key !== "Men" && key !== "Women" // Exclude category filters from type filter
         );
         if (selectedTypes.length > 0) {
           queryConstraints.push(where("Type", "in", selectedTypes));
@@ -71,7 +76,6 @@ const Brands = () => {
         const productsCollection = await getDocs(
           query(collection(db, "Brands"), ...queryConstraints)
         );
-
         const productsData = productsCollection.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -81,15 +85,12 @@ const Brands = () => {
         const filteredBySearch = productsData.filter((product) =>
           product.brandName?.toLowerCase().includes(searchTerm.toLowerCase())
         );
-
         const filteredByBrand = filteredBySearch.filter(
           (product) =>
             selectedBrands.length === 0 ||
             selectedBrands.includes(product.brandName)
         );
-
         setProducts(filteredByBrand);
-
         // Extract unique brand names for the checkbox list
         const uniqueBrands = [
           ...new Set(productsData.map((product) => product.brandName)),
@@ -101,9 +102,8 @@ const Brands = () => {
         setLoading(false);
       }
     };
-
     fetchProducts();
-  }, [filters, searchTerm, selectedBrands, genderFilters]);
+  }, [filters, searchTerm, selectedBrands]);
 
   const handleFilterChange = (event) => {
     const { name, checked } = event.target;
@@ -211,7 +211,8 @@ const Brands = () => {
                         "accessories",
                         "equipment",
                         "clothing",
-                        "sports", // Added Sports filter
+                        "sports",
+                        "jewllery & watches", // Added Sports filter
                       ].map((filter) => (
                         <li
                           key={filter}
