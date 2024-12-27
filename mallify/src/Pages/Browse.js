@@ -98,7 +98,10 @@ const Browse = () => {
             <p style={{ color: "white", fontSize: "25px" }}>
               Snap up items at the best prices
             </p>
-            <a style={{ color: "white", textDecoration: "underline" }}>
+            <a
+              href="/Sale"
+              style={{ color: "white", textDecoration: "underline" }}
+            >
               SHOP ONLINE
             </a>
           </div>
@@ -132,9 +135,16 @@ const Browse = () => {
             }}
           >
             <p style={{ color: "white", fontSize: "50px" }}>Find a Store</p>
+
             <p style={{ color: "white", fontSize: "25px" }}>
               We cater to every shopping need
             </p>
+            <a
+              href="/FindStore"
+              style={{ color: "white", textDecoration: "underline" }}
+            >
+              BROWSE STORES
+            </a>
           </div>
         </Card>
       </div>
@@ -257,7 +267,7 @@ const Browse = () => {
                 purchases into 4 interest-free payments now.
               </p>
 
-              <a href="#" className="btn btn-link">
+              <a href="/Brands" className="btn btn-link">
                 Shop Online
               </a>
             </div>

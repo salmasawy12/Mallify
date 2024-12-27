@@ -177,9 +177,9 @@ const Header = () => {
                   <div
                     style={{
                       position: "absolute",
-                      top: "60px",
-                      left: "15px",
-                      width: "470px",
+                      top: "105px",
+                      left: "770px",
+                      width: "500px",
                       backgroundColor: "#fff",
                       boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                       zIndex: "1000",
@@ -284,9 +284,10 @@ const Header = () => {
           </div>
         </div>
       </nav>
-
-      {isSidebarOpen && <Sidebar closeSidebar={toggleSidebar} />}
-      {isModalOpen && <Modal closeModal={toggleModal} />}
+      {isSidebarOpen && (
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      )}{" "}
+      <Modal isModalOpen={isModalOpen} toggleModal={toggleModal} />
     </div>
   );
 };

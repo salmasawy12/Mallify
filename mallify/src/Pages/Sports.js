@@ -333,82 +333,88 @@ const Sports = () => {
                         position: "relative",
                       }}
                     >
-                      <div
-                        style={{
-                          border: "1px solid #ddd",
-                          borderRadius: "8px",
-                          overflow: "hidden",
-                          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                          cursor: "pointer",
-                        }}
+                      <Link
+                        to={`/product/${product.id}`}
+                        style={{ textDecoration: "none", color: "inherit" }}
                       >
-                        <img
-                          src={product.imageUrl || "/placeholder.png"}
-                          alt={product.productName}
-                          style={{ width: "100%", display: "block" }}
-                        />
-                        {product.Sale && (
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: "10px",
-                              left: "10px",
-                              backgroundColor: "red",
-                              color: "white",
-                              fontSize: "12px",
-                              fontWeight: "bold",
-                              padding: "5px 10px",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            SALE
+                        <div
+                          style={{
+                            border: "1px solid #ddd",
+                            borderRadius: "8px",
+                            overflow: "hidden",
+                            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <img
+                            src={product.imageUrl || "/placeholder.png"}
+                            alt={product.productName}
+                            style={{ width: "100%", display: "block" }}
+                          />
+                          {product.Sale && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: "10px",
+                                left: "10px",
+                                backgroundColor: "red",
+                                color: "white",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                                padding: "5px 10px",
+                                borderRadius: "4px",
+                              }}
+                            >
+                              SALE
+                            </div>
+                          )}
+                          <div style={{ padding: "16px" }}>
+                            <h4 style={{ fontSize: "14px", color: "#666" }}>
+                              {product.brandName}
+                            </h4>
+                            <h3
+                              style={{
+                                fontSize: "18px",
+                                color: "#000",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {product.productName}
+                            </h3>
+                            <p style={{ color: "#333" }}>
+                              {product.Sale ? (
+                                <>
+                                  <span
+                                    style={{ textDecoration: "line-through" }}
+                                  >
+                                    ${product.Price}
+                                  </span>
+                                  <br />
+                                  <span>${product.DiscountedPrice}</span>
+                                </>
+                              ) : (
+                                `$${product.Price}`
+                              )}
+                            </p>
+                            <button
+                              className="btn btn-primary"
+                              style={{
+                                backgroundColor: "#131120",
+                                borderColor: "#131120",
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault(); // Prevent Link navigation when clicking on the button
+                                handleAddToCart(product); // Add the product to the cart
+                              }}
+                              disabled={buttonLoading[product.id]} // Disable button if loading
+                            >
+                              {buttonLoading[product.id]
+                                ? "Adding..."
+                                : "Add to Cart"}
+                            </button>
                           </div>
-                        )}
-                        <div style={{ padding: "16px" }}>
-                          <h4 style={{ fontSize: "14px", color: "#666" }}>
-                            {product.brandName}
-                          </h4>
-                          <h3
-                            style={{
-                              fontSize: "18px",
-                              color: "#000",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {product.productName}
-                          </h3>
-                          <p style={{ color: "#333" }}>
-                            {product.Sale ? (
-                              <>
-                                <span
-                                  style={{ textDecoration: "line-through" }}
-                                >
-                                  ${product.Price}
-                                </span>
-                                <br />
-                                <span>${product.DiscountedPrice}</span>
-                              </>
-                            ) : (
-                              `$${product.Price}`
-                            )}
-                          </p>
-                          <button
-                            className="btn btn-primary"
-                            style={{
-                              backgroundColor: "#131120",
-                              borderColor: "#131120",
-                            }}
-                            onClick={() => handleAddToCart(product)}
-                            disabled={buttonLoading[product.id]} // Disable button if loading
-                          >
-                            {buttonLoading[product.id] ? (
-                              <span>Loading...</span>
-                            ) : (
-                              <span>Add to Cart</span>
-                            )}
-                          </button>
                         </div>
-                      </div>
+                      </Link>
                     </div>
                   ))}
                 </div>

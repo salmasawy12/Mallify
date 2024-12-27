@@ -419,14 +419,15 @@ const Menshops = () => {
                                 backgroundColor: "#131120",
                                 borderColor: "#131120",
                               }}
-                              onClick={() => handleAddToCart(product)}
+                              onClick={(e) => {
+                                e.preventDefault(); // Prevent Link navigation when clicking on the button
+                                handleAddToCart(product); // Add the product to the cart
+                              }}
                               disabled={buttonLoading[product.id]} // Disable button if loading
                             >
-                              {buttonLoading[product.id] ? (
-                                <span>Loading...</span>
-                              ) : (
-                                <span>Add to Cart</span>
-                              )}
+                              {buttonLoading[product.id]
+                                ? "Adding..."
+                                : "Add to Cart"}
                             </button>
                           </div>
                         </div>

@@ -22,6 +22,7 @@ import Sports from "./Pages/Sports";
 import ProductDetails from "./Pages/ProductDetails";
 import StoreDetails from "./Pages/StoreDetails";
 import Sale from "./Pages/Sale";
+import FindStore from "./Pages/FindStore";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 <link
@@ -54,6 +55,7 @@ root.render(
 
           <Route path="/Sports" element={<Sports />} />
           <Route path="/Sale" element={<Sale />} />
+          <Route path="/FindStore" element={<FindStore />} />
         </Routes>
       </Router>
     </CartProvider>

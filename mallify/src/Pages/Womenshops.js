@@ -116,6 +116,32 @@ const Womenshops = () => {
         : prevBrands.filter((brand) => brand !== name)
     );
   };
+  const [buttonLoading, setButtonLoading] = useState({}); // Track loading state for each product
+
+  const handleAddToCart = async (product) => {
+    setButtonLoading((prevState) => ({
+      ...prevState,
+      [product.id]: true, // Set loading for this specific product
+    }));
+
+    try {
+      const cartItem = {
+        ...product,
+        price: product.Sale ? product.DiscountedPrice : product.Price, // Use discounted price if on sale
+        quantity: 1, // Default quantity is 1 when added to the cart
+      };
+      await addToCart(cartItem);
+      alert("Item added to cart successfully!");
+    } catch (error) {
+      alert("Failed to add item to cart.");
+    } finally {
+      setButtonLoading((prevState) => ({
+        ...prevState,
+        [product.id]: false, // Reset loading state for this product
+      }));
+    }
+  };
+
   return (
     <div>
       <Header></Header>
@@ -359,15 +385,15 @@ const Womenshops = () => {
                                 backgroundColor: "#131120",
                                 color: "white",
                               }}
-                              onClick={() =>
-                                addToCart({
-                                  ...product,
-                                  price: product.Price,
-                                  quantity: 1, // Default quantity is 1 when added to the cart
-                                })
-                              }
+                              onClick={(e) => {
+                                e.preventDefault(); // Prevent Link navigation when clicking on the button
+                                handleAddToCart(product); // Add the product to the cart
+                              }}
+                              disabled={buttonLoading[product.id]} // Disable button if loading
                             >
-                              Add to Cart
+                              {buttonLoading[product.id]
+                                ? "Adding..."
+                                : "Add to Cart"}
                             </button>
                           </div>
                         </div>

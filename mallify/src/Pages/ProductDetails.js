@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getApp } from "firebase/app";
@@ -72,39 +73,61 @@ const ProductDetails = () => {
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
-      <div
-        className="container mt-5 flex-grow-1"
-        style={{ marginBottom: "40px" }}
-      >
+      <div className="container">
+        <div className="row" style={{ marginTop: "10px" }}>
+          <div className="col" style={{ color: "#131120" }}>
+            <Link to="/" style={{ color: "#131120", textDecoration: "none" }}>
+              Home /
+            </Link>{" "}
+            <span style={{ textDecoration: "underline" }}>Products</span>
+          </div>
+        </div>
         <div
-          className="card shadow-lg"
-          style={{ maxWidth: "800px", margin: "0 auto" }}
+          className="row"
+          style={{
+            marginTop: "25px",
+            fontSize: "75px",
+            color: "#131120",
+            padding: "0px",
+          }}
         >
-          <div className="row g-0">
-            <div className="col-md-6">
-              <img
-                src={product.imageUrl}
-                className="img-fluid rounded-start"
-                alt={product.productName}
-              />
-            </div>
-            <div className="col-md-6">
-              <div className="card-body" style={{}}>
-                <h5 className="card-title text-primary">
-                  {product.productName}
-                </h5>
-                <h6 className="card-subtitle mb-2 text-muted">
-                  {product.brandName}
-                </h6>
-                <p className="card-text text-dark">${product.Price}</p>
-                <p className="card-text">{product.description}</p>
-                <button
-                  className="btn btn-primary w-100 mt-3"
-                  onClick={handleAddToCart}
-                  disabled={buttonLoading}
-                >
-                  {buttonLoading ? "Adding to Cart..." : "Add to Cart"}
-                </button>
+          Products
+        </div>
+        <div
+          className="container mt-5 flex-grow-1"
+          style={{ marginBottom: "40px" }}
+        >
+          <div
+            className="card shadow-lg"
+            style={{ maxWidth: "800px", margin: "0 auto" }}
+          >
+            <div className="row g-0">
+              <div className="col-md-6">
+                <img
+                  src={product.imageUrl}
+                  className="img-fluid rounded-start"
+                  alt={product.productName}
+                />
+              </div>
+              <div className="col-md-6">
+                <div className="card-body" style={{}}>
+                  <h5 className="card-title" style={{ color: "#131120" }}>
+                    {product.productName}
+                  </h5>
+                  <h6 className="card-subtitle mb-2 text-muted">
+                    {product.brandName}
+                  </h6>
+                  <p className="card-text text-dark">${product.Price}</p>
+                  <p className="card-text">{product.description}</p>
+                  <button
+                    className="btn w-100 mt-3"
+                    onClick={handleAddToCart}
+                    disabled={buttonLoading}
+                    style={{ backgroundColor: "#131120", color: "white" }}
+                  >
+                    {buttonLoading ? "Adding to Cart..." : "Add to Cart"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
